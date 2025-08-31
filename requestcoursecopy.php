@@ -80,7 +80,6 @@ $enrolmentinstances = array_values(enrol_get_instances($targetcourseid, true));
 foreach ($enrolmentinstances as $instance) {
     if ($instance->enrol === 'manual') {
         $manualinstance = $instance;
-        break;
     }
     if ($instance->enrol === 'autoenrol') {
         enrol_get_plugin('autoenrol')->delete_instance($instance);
