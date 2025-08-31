@@ -45,11 +45,11 @@ $course = $DB->get_record('course', ['id' => $block->config->courseid]);
 
 $CFG->backup_file_logger_level = backup::LOG_NONE;
 $bc = new backup_controller(backup::TYPE_1COURSE, $course->id,
-        backup::FORMAT_MOODLE, backup::INTERACTIVE_NO, backup::MODE_IMPORT,
+        backup::FORMAT_MOODLE, backup::INTERACTIVE_NO, backup::MODE_AUTOMATED,
         $USER->id);
 $backupid = $bc->get_backupid();
-$plan = $bc->get_plan();
 $bc->execute_plan();
+$destination = $bc->get_plan()->get_results()['backup_destination'];
 $bc->destroy();
 
 $category = $block->config->categoryid ?? $course->category;
@@ -58,7 +58,13 @@ $category = $block->config->categoryid ?? $course->category;
 $targetcourseid = restore_dbops::create_new_course(
     $course->fullname, $course->shortname . uniqid(), $category
 );
-$rc = new restore_controller($backupid, $targetcourseid,
+$tempfile = $destination->copy_content_to_temp('backup');
+$fp = get_file_packer('application/vnd.moodle.backup');
+$subdir = '/restore_' . uniqid();
+$tmpdir = $CFG->backuptempdir . $subdir;
+$extracted = $fp->extract_to_pathname($tempfile, $tmpdir);
+@unlink($tempfile);
+$rc = new restore_controller($subdir, $targetcourseid,
         backup::INTERACTIVE_NO, backup::MODE_GENERAL, $USER->id,
         backup::TARGET_NEW_COURSE);
 $rc->execute_precheck();
