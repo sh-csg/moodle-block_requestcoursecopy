@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\plugininfo\enrol;
+
 require('../../config.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
@@ -79,6 +81,9 @@ foreach ($enrolmentinstances as $instance) {
     if ($instance->enrol === 'manual') {
         $manualinstance = $instance;
         break;
+    }
+    if ($instance->enrol === 'autoenrol') {
+        enrol_get_plugin('autoenrol')->delete_instance($instance);
     }
 }
 if (empty($manualinstance)) {
