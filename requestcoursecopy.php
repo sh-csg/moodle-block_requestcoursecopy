@@ -46,9 +46,14 @@ echo $OUTPUT->header();
 $course = $DB->get_record('course', ['id' => $block->config->courseid]);
 
 $CFG->backup_file_logger_level = backup::LOG_NONE;
-$bc = new backup_controller(backup::TYPE_1COURSE, $course->id,
-        backup::FORMAT_MOODLE, backup::INTERACTIVE_NO, backup::MODE_AUTOMATED,
-        $USER->id);
+$bc = new backup_controller(
+    backup::TYPE_1COURSE,
+    $course->id,
+    backup::FORMAT_MOODLE,
+    backup::INTERACTIVE_NO,
+    backup::MODE_AUTOMATED,
+    $USER->id
+);
 $backupid = $bc->get_backupid();
 $bc->execute_plan();
 $destination = $bc->get_plan()->get_results()['backup_destination'];
@@ -58,7 +63,9 @@ $category = $block->config->categoryid ?? $course->category;
 
 // Restore it to a new course.
 $targetcourseid = restore_dbops::create_new_course(
-    $course->fullname, $course->shortname . uniqid(), $category
+    $course->fullname,
+    $course->shortname . uniqid(),
+    $category
 );
 $tempfile = $destination->copy_content_to_temp('backup');
 $fp = get_file_packer('application/vnd.moodle.backup');
@@ -66,9 +73,14 @@ $subdir = '/restore_' . uniqid();
 $tmpdir = $CFG->backuptempdir . $subdir;
 $extracted = $fp->extract_to_pathname($tempfile, $tmpdir);
 @unlink($tempfile);
-$rc = new restore_controller($subdir, $targetcourseid,
-        backup::INTERACTIVE_NO, backup::MODE_GENERAL, $USER->id,
-        backup::TARGET_NEW_COURSE);
+$rc = new restore_controller(
+    $subdir,
+    $targetcourseid,
+    backup::INTERACTIVE_NO,
+    backup::MODE_GENERAL,
+    $USER->id,
+    backup::TARGET_NEW_COURSE
+);
 $rc->execute_precheck();
 $rc->execute_plan();
 $rc->destroy();
@@ -79,20 +91,22 @@ $manualinstance = null;
 $enrolmentinstances = array_values(enrol_get_instances($targetcourseid, true));
 foreach ($enrolmentinstances as $instance) {
     if ($instance->enrol === 'manual') {
-        $manualinstance = $instance;
+        enrol_get_plugin('manual')->delete_instance($instance);
     }
     if ($instance->enrol === 'autoenrol') {
         enrol_get_plugin('autoenrol')->delete_instance($instance);
     }
 }
-if (empty($manualinstance)) {
-    $targetcourse = $DB->get_record('course', ['id' => $targetcourseid]);
-    // Create a manual enrolment instance if it does not exist.
-    $manualinstance = $enrol->add_instance($targetcourseid, [
-        'status' => ENROL_INSTANCE_ENABLED,
-        'sortorder' => 0,
-    ]);
-}
+
+$targetcourse = $DB->get_record('course', ['id' => $targetcourseid]);
+// Create a new manual enrolment instance.
+$manualinstanceid = $enrol->add_instance($targetcourse, [
+    'status' => ENROL_INSTANCE_ENABLED,
+    'sortorder' => 0,
+]);
+
+$manualinstance = $DB->get_record('enrol', ['id' => $manualinstanceid, 'enrol' => 'manual'], '*', MUST_EXIST);
+
 $guestroleid = $DB->get_field('role', 'id', ['shortname' => 'guest']);
 // Unenrol user to make sure there are no leftover role assignments.
 $enrol->unenrol_user($manualinstance, $USER->id);
