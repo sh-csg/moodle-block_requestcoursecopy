@@ -30,6 +30,9 @@
 }}
 <div class="alert alert-success">
     {{#course}}
-        <a class="btn btn-primary" href="{{{global.wwwroot}}}/course/view.php?id={{id}}">View course</a>
+        <a class="btn btn-primary" href="{{{global.wwwroot}}}/course/view.php?id={{id}}">
+        {{#buttontext}}{{buttontext}}{{/buttontext}}
+        {{^buttontext}}{{#str}}goto, block_requestcoursecopy{{/str}}{{/buttontext}}
+        </a>
     {{/course}}
 </div>
