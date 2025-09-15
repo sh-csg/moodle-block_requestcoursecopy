@@ -56,14 +56,22 @@ class block_requestcoursecopy extends block_base {
                 $mycoursecontext = context_course::instance($mycourse->id);
                 if (user_has_role_assignment($USER->id, $this->config->roleid, $mycoursecontext->id)) {
                     // Show message that course copy already exists.
-                    $text = $OUTPUT->render_from_template('block_requestcoursecopy/existingcourse', [
+                    $text .= $OUTPUT->render_from_template('block_requestcoursecopy/existingcourse', [
                         'course' => $mycourse,
+                        'buttontext' => $this->config->buttontext_goto ?? '',
                     ]);
                 }
             }
         }
         if ($text === '') {
-            $text = $OUTPUT->render_from_template('block_requestcoursecopy/copybutton', ['blockid' => $this->instance->id]);
+            $text = $OUTPUT->render_from_template(
+                'block_requestcoursecopy/copybutton',
+                ['blockid' => $this->instance->id, 'buttontext' => $this->config->buttontext_request ?? '']
+            );
+        }
+
+        if (!empty($this->config->description->text)) {
+            $text = format_string($this->config->description->text) . $text;
         }
 
         $this->content = (object)[

@@ -53,5 +53,18 @@ class block_requestcoursecopy_edit_form extends block_edit_form {
 
         $mform->addElement('advcheckbox', 'config_onlyonecopy', get_string('allowonlyonecopy', 'block_requestcoursecopy'));
         $mform->setType('config_onlyonecopy', PARAM_BOOL);
+
+        $mform->addElement('text', 'config_title', get_string('title', 'block_requestcoursecopy'));
+        $mform->setType('title', PARAM_TEXT);
+
+        $mform->addElement('editor', 'config_description', get_string('description'));
+        $mform->setType('description', PARAM_TEXT);
+
+        $mform->addElement('text', 'config_buttontext_request', get_string('buttontext_request'));
+        $mform->setType('config_buttontext_request', PARAM_TEXT);
+
+        $mform->addElement('text', 'config_buttontext_goto', get_string('buttontext_goto'));
+        $mform->setType('config_buttontext_goto', PARAM_TEXT);
+
     }
 }
