@@ -51,16 +51,18 @@ class block_requestcoursecopy extends block_base {
         if ($this->config->onlyonecopy ?? false) {
             $existingcopies = $DB->get_records('course', ['originalcourseid' => $this->config->courseid]);
             $existingcopiescourseids = array_column($existingcopies, 'id');
-            $mycourses = enrol_get_my_courses(null, null, 0, $existingcopiescourseids);
-            foreach ($mycourses as $mycourse) {
-                $mycoursecontext = context_course::instance($mycourse->id);
-                if (user_has_role_assignment($USER->id, $this->config->roleid, $mycoursecontext->id)) {
-                    // Show message that course copy already exists.
-                    $text .= $OUTPUT->render_from_template('block_requestcoursecopy/existingcourse', [
-                        'course' => $mycourse,
-                        'buttontext' => $this->config->buttontext_goto ?? '',
-                    ]);
-                    break;
+            if (count($existingcopiescourseids) > 0) {
+                $mycourses = enrol_get_my_courses(null, null, 0, $existingcopiescourseids);
+                foreach ($mycourses as $mycourse) {
+                    $mycoursecontext = context_course::instance($mycourse->id);
+                    if (user_has_role_assignment($USER->id, $this->config->roleid, $mycoursecontext->id)) {
+                        // Show message that course copy already exists.
+                        $text .= $OUTPUT->render_from_template('block_requestcoursecopy/existingcourse', [
+                            'course' => $mycourse,
+                            'buttontext' => $this->config->buttontext_goto ?? '',
+                        ]);
+                        break;
+                    }
                 }
             }
         }

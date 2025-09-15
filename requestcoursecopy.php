@@ -86,7 +86,6 @@ $rc = new restore_controller(
 $rc->get_plan()->get_setting('enrolments')->set_value(backup::ENROL_ALWAYS);
 $rc->execute_precheck();
 $rc->execute_plan();
-$rc->destroy();
 
 // Now enrol the user.
 $enrol = enrol_get_plugin('manual');
@@ -130,12 +129,27 @@ $recyclebinfiles = $fs->get_area_files(
     false
 );
 
+$binrecords = $DB->get_records('tool_recyclebin_course', ['courseid' => $course->id]);
+$map = [];
+foreach ($binrecords as $binrecord) {
+    $activity = clone($binrecord);
+    $activity->courseid = $targetcourseid;
+    // $activity->section = restore_dbops::get_backup_ids_record(
+    //     $rc->get_restoreid(),
+    //     'section',
+    //     $activity->section
+    // ) ?? $activity->section;
+    $activity->timecreated = time();
+    $binid = $DB->insert_record('tool_recyclebin_course', $activity);
+    $map[$binrecord->id] = $binid;
+}
+
 foreach ($recyclebinfiles as $file) {
     $record = [
         'contextid' => $targetcoursecontext->id,
         'component' => 'tool_recyclebin',
         'filearea' => 'recyclebin_course',
-        'itemid' => $file->get_itemid(),
+        'itemid' => $map[$file->get_itemid()] ?? $file->get_itemid(),
         'filepath' => $file->get_filepath(),
         'filename' => $file->get_filename(),
         'userid' => $USER->id,
@@ -149,3 +163,5 @@ echo $OUTPUT->render_from_template('block_requestcoursecopy/success', [
 ]);
 
 echo $OUTPUT->footer();
+
+$rc->destroy();
