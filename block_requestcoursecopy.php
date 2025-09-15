@@ -60,6 +60,7 @@ class block_requestcoursecopy extends block_base {
                         'course' => $mycourse,
                         'buttontext' => $this->config->buttontext_goto ?? '',
                     ]);
+                    break;
                 }
             }
         }
@@ -70,8 +71,8 @@ class block_requestcoursecopy extends block_base {
             );
         }
 
-        if (!empty($this->config->description->text)) {
-            $text = format_string($this->config->description->text) . $text;
+        if (!empty($this->config->description['text'])) {
+            $text = format_string($this->config->description['text']) . $text;
         }
 
         $this->content = (object)[
