@@ -99,4 +99,12 @@ class block_requestcoursecopy extends block_base {
             'my' => false,
         ];
     }
+
+    /**
+     * Allow multiple instances of the block.
+     * @return bool
+     */
+    public function instance_allow_multiple() {
+        return true;
+    }
 }
