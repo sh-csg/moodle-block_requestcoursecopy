@@ -79,6 +79,11 @@ class block_requestcoursecopy extends block_base {
             'footer' => '',
             'text' => $text,
         ];
+
+        if (!empty($this->config->title)) {
+            $this->title = format_string($this->config->title);
+        }
+
         return $this->content;
     }
 
