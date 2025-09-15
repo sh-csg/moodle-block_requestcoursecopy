@@ -121,15 +121,22 @@ $targetcoursecontext = context_course::instance($targetcourseid);
 
 $fs = get_file_storage();
 
-$recyclebinfiles = $fs->get_area_files($sourcecoursecontext->id, 'tool_recyclebin', 'recyclebin_course');
+$recyclebinfiles = $fs->get_area_files(
+    $sourcecoursecontext->id,
+    'tool_recyclebin',
+    'recyclebin_course',
+    false,
+    'id',
+    false
+);
 
 foreach ($recyclebinfiles as $file) {
     $record = [
         'contextid' => $targetcoursecontext->id,
         'component' => 'tool_recyclebin',
         'filearea' => 'recyclebin_course',
-        'itemid' => 0,
-        'filepath' => '/',
+        'itemid' => $file->get_itemid(),
+        'filepath' => $file->get_filepath(),
         'filename' => $file->get_filename(),
         'userid' => $USER->id,
     ];
