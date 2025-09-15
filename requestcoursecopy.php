@@ -24,6 +24,8 @@
 
 use core\plugininfo\enrol;
 
+use function DI\get;
+
 require('../../config.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
@@ -112,6 +114,27 @@ $guestroleid = $DB->get_field('role', 'id', ['shortname' => 'guest']);
 // Unenrol user to make sure there are no leftover role assignments.
 $enrol->unenrol_user($manualinstance, $USER->id);
 $enrol->enrol_user($manualinstance, $USER->id, $block->config->roleid ?? $guestroleid);
+
+// Copy recyclebin.
+$sourcecoursecontext = context_course::instance($course->id);
+$targetcoursecontext = context_course::instance($targetcourseid);
+
+$fs = get_file_storage();
+
+$recyclebinfiles = $fs->get_area_files($sourcecoursecontext->id, 'tool_recyclebin', 'recyclebin_course');
+
+foreach ($recyclebinfiles as $file) {
+    $record = [
+        'contextid' => $targetcoursecontext->id,
+        'component' => 'tool_recyclebin',
+        'filearea' => 'recyclebin_course',
+        'itemid' => 0,
+        'filepath' => '/',
+        'filename' => $file->get_filename(),
+        'userid' => $USER->id,
+    ];
+    $fs->create_file_from_storedfile($record, $file);
+}
 
 echo $OUTPUT->render_from_template('block_requestcoursecopy/success', [
     'course' => $targetcourseid,
