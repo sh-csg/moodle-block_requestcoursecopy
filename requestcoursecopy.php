@@ -83,7 +83,7 @@ $rc = new restore_controller(
     $USER->id,
     backup::TARGET_NEW_COURSE
 );
-$rc->get_plan()->get_setting('enrolments')->set_value(backup::ENROL_ALWAYS);
+//$rc->get_plan()->get_setting('enrolments')->set_value(backup::ENROL_ALWAYS);
 $rc->execute_precheck();
 $rc->execute_plan();
 
